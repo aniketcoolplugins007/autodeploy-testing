@@ -1,0 +1,35 @@
+name: Plugin Check + Deploy to WordPress.org
+
+on:
+  push:  # 👈 triggers on ALL branches and commits
+    branches:
+      - "**" # runs on every branch (feature/, main, develop, etc.)
+
+
+  # Step 1: Run Plugin Check
+  plugin-check:
+    name: Run WordPress Plugin Check (PCP)
+    uses: CoolPluginsTeam/cool-plugins-ci/.github/workflows/plugin-check.yml@main
+    with:
+      plugin-folder: your-plugin-folder-name
+
+  # Step 2: Deploy to WordPress.org (only if Plugin Check pa
+  deploy:
+    name: Deploy to WordPress.org
+    runs-on: ubuntu-latest
+    needs: plugin-check  # Wait for PCP to finish
+    if: success()        # Run only if previous job succeeded
+
+    steps:
+      - name: print success text
+        run: echo "Plugin Check passed, deploying to WordPress.org"
+  
+  # Step 2: Print failure text
+  failure:
+    name: Print failure text
+    runs-on: ubuntu-latest
+    needs: plugin-check
+    if: failure()
+    steps:
+      - name: print failure text
+        run: echo "Plugin Check failed, please review the GitHub Actions log for full details."
