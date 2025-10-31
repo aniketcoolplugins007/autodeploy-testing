@@ -1,0 +1,9 @@
+{
+    "ref": "refs/tags/V0.0.0",
+    "repository": {
+      "full_name": "aniketcoolplugins007/autodeploy-testing"
+    },
+    "head_commit": {
+      "message": "Automated tag push"
+    }
+  }

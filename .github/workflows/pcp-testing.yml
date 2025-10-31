@@ -12,7 +12,7 @@ jobs:  # 👈 THIS is the key you were missing
     name: Run WordPress Plugin Check (PCP)
     uses: CoolPluginsTeam/cool-plugins-ci/.github/workflows/plugin-check.yml@main
     with:
-      plugin-folder: your-plugin-folder-name  # 👈 replace with your actual plugin folder
+      plugin-folder: autodeploy-testing  # 👈 replace with your actual plugin folder
 
   # Step 2: Deploy to WordPress.org (only if Plugin Check passes)
   deploy:
