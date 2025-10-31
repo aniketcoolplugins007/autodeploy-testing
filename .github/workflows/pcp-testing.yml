@@ -10,7 +10,7 @@ jobs:
     name: Run WordPress Plugin Check (PCP)
     uses: CoolPluginsTeam/cool-plugins-ci/.github/workflows/plugin-check.yml@main
     with:
-      plugin-folder: full-repo-scan  # 👈 this will contain your whole repo inside /wp-content/plugins/
+      plugin-folder: autodeploy-testing
 
   deploy:
     name: Deploy to WordPress.org
