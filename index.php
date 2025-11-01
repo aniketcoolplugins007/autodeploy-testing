@@ -1,3 +1,3 @@
 <?php
 
-echo : testing 0.6;
+echo : testing 0.7;
