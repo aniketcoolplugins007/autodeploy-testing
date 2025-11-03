@@ -15,7 +15,7 @@ jobs:
       - name: Run WordPress Plugin Check
         uses: wordpress/plugin-check-action@v1
         with:
-            build-dir: './dist/autodeploy-testing'
+            build-dir: './'
             exclude-directories: |
               vendor
               third-party
