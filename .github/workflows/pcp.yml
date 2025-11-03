@@ -1,0 +1,26 @@
+name: Plugin Quality Check
+
+on:
+  push:
+    branches:
+      - "**"
+
+jobs:
+  plugin-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Run WordPress Plugin Check
+        uses: wordpress/plugin-check-action@v1
+        with:
+            build-dir: './dist/autodeploy-testing'
+            exclude-directories: |
+              vendor
+              third-party
+              node_modules
+            categories: |
+              plugin_repo
+              security
+            strict: true

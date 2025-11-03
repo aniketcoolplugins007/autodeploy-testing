@@ -2,8 +2,8 @@ name: Plugin Check + Deploy to WordPress.org
 
 on:
   push:
-    branches:
-      - "**"
+    tags:
+      - "v*.*.*"
 
 jobs:
   plugin-check:
