@@ -14,4 +14,4 @@
  * Requires PHP: 7.0
  */
 
- echo "Hello World 0.1";
+//  echo "Hello World 0.1";
