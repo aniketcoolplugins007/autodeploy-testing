@@ -1,0 +1,29 @@
+name: Deploy After Approval Example
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+
+jobs:
+  plugin-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Run plugin check
+        run: echo "Running plugin validation..."
+        
+  deploy:
+    name: Deploy new tag
+    runs-on: ubuntu-latest
+    needs: plugin-check
+    environment:
+      name: deploy-new-tag  # configure this in repo Settings → Environments
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run deployment code
+        run: |
+          echo "🚀 This code runs ONLY after approval!"

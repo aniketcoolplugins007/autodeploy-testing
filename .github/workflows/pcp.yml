@@ -1,26 +1,103 @@
-name: Plugin Quality Check
+name: Plugin Quality Check & Conditional Deploy
 
 on:
   push:
     branches:
       - "**"
 
+# Needed so the workflow can push tags
+permissions:
+  contents: write
+
 jobs:
   plugin-check:
+    name: Run Plugin Quality Check
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Run WordPress Plugin Check
+        id: check
         uses: wordpress/plugin-check-action@v1
         with:
-            build-dir: './'
-            exclude-directories: |
-              vendor
-              third-party
-              node_modules
-            categories: |
-              plugin_repo
-              security
-            strict: true
+          build-dir: './'
+          exclude-directories: |
+            vendor
+            third-party
+            node_modules
+          categories: |
+            plugin_repo
+            security
+          strict: true
+
+      - name: Summary
+        if: success()
+        run: echo "✅ Plugin Check passed."
+
+      - name: Summary (failure)
+        if: failure()
+        run: echo "❌ Plugin Check failed — manual review will be required to deploy."
+
+  deploy-on-success:
+    name: Auto Deploy (no approval)
+    runs-on: ubuntu-latest
+    needs: plugin-check
+    if: ${{ needs.plugin-check.result == 'success' }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Create and push tag
+        run: |
+          TAG="v$(date +%Y%m%d%H%M)"
+          echo "Creating tag ${TAG}"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "${TAG}" -m "Auto tag after successful Plugin Check"
+          git push origin "${TAG}"
+          echo "TAG=${TAG}" >> $GITHUB_ENV
+
+      # OPTIONAL: If you want to deploy to WordPress.org after tagging, add your deploy step here.
+      # Example using your own script or action:
+      # - name: Deploy to WordPress.org (optional)
+      #   run: |
+      #     echo "Deploying ${TAG} to WordPress.org..."
+      #     ./scripts/deploy-to-wporg.sh "${TAG}"
+
+  deploy-on-failure:
+    name: Manual Review & Deploy (requires approval)
+    runs-on: ubuntu-latest
+    needs: plugin-check
+    if: ${{ needs.plugin-check.result == 'failure' }}
+    # This environment triggers the approval dialog in the Actions UI
+    environment:
+      name: depoloy-new-tag  # configure this in repo Settings → Environments
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Explain status
+        run: |
+          echo "❗ Plugin Check failed."
+          echo "A reviewer must approve this environment deployment to continue."
+
+      - name: Create and push tag after approval
+        run: |
+          echo "Testing successfully completed"
+
+      # OPTIONAL: add your deploy to WordPress.org here as well
+      # - name: Deploy to WordPress.org (optional)
+      #   run: |
+      #     echo "Deploying ${TAG} to WordPress.org (post-review)..."
+      #     ./scripts/deploy-to-wporg.sh "${TAG}"
+
+  deploy-on-approval:
+    name: Deploy new tag
+    runs-on: ubuntu-latest
+    needs: deploy-on-failure
+    if: success()
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
