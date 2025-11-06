@@ -82,6 +82,12 @@ jobs:
           cat email-body.html
           echo "EOF"
 
+      - name: Testing Output
+        run: |
+          echo "html_body: ${{ steps.email_body }}"
+          echo "html_body: ${{ steps.email_body.outputs }}"
+          echo "html_body: ${{ steps.email_body.outputs.html_body }}"
+
       - name: Send Plugin Check Log via Email
         if: failure()
         uses: dawidd6/action-send-mail@v3
@@ -94,4 +100,4 @@ jobs:
           to: rocef76932@wivstore.com
           from: CoolPlugins CI Bot <${{ secrets.MAIL_USERNAME }}>
           subject: "❌ Plugin Check Failed for ${{ inputs.plugin-folder }} Because PCP errors found."
-          html_body: ${{ steps.email_body.outputs.html_body }}
+          html_body: ${{ steps.email_body }}
