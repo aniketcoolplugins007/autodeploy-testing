@@ -3,7 +3,7 @@ name: Plugin Quality Check & Conditional Deploy
 on:
   push:
     tags:
-      - "v*"
+    - "v*"
 
 # Needed so the workflow can push tags
 permissions:
