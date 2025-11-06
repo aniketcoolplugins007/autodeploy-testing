@@ -2,8 +2,8 @@ name: Plugin Quality Check & Conditional Deploy
 
 on:
   push:
-    tags:
-      - "v*"   # runs only when you push a tag
+    branches:
+      - "**"   # runs only when you push a tag
 
 permissions:
   contents: write  # required to delete remote tags
@@ -38,5 +38,9 @@ jobs:
       - name: send fails error message to the user
         if: failure()
         run: |
-          echo "❌ Plugin Check failed — deleting the latest pushed tag..."
-          echo "Error message: ${{ steps.check.outputs.error }}"
+          echo "=== 🧩 WordPress Plugin Check Results ==="
+          if [ -f /home/runner/work/_temp/plugin-check-results.txt ]; then
+            cat /home/runner/work/_temp/plugin-check-results.txt
+          else
+            echo "No results file found!"
+          fi
