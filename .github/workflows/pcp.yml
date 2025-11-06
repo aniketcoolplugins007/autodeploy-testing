@@ -3,11 +3,10 @@ name: Plugin Quality Check & Conditional Deploy
 on:
   push:
     tags:
-    - "v*"
+      - "v*"   # runs only when you push a tag
 
-# Needed so the workflow can push tags
 permissions:
-  contents: write
+  contents: write  # required to delete remote tags
 
 jobs:
   plugin-check:
@@ -32,14 +31,12 @@ jobs:
             security
           strict: true
 
-      - name: Summary
+      - name: Summary (success)
         if: success()
         run: echo "✅ Plugin Check passed."
 
-      - name: Summary (failure)
+      - name: send fails error message to the user
         if: failure()
         run: |
-          echo "❌ Plugin Check failed — ($(git tag -l | tail -n 1)) tag will be deleted."
-          git tag -d $(git tag -l | tail -n 1)  # delete the tag from the local repository
-          git push origin :$(git tag -l | tail -n 1)  # delete the tag from the remote repository
-          echo "Tag deleted successfully"
+          echo "❌ Plugin Check failed — deleting the latest pushed tag..."
+          echo "Error message: ${{ steps.check.outputs.error }}"
