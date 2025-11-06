@@ -38,7 +38,23 @@ jobs:
       - name: Generate HTML Email Body
         id: email_body
         run: |
+          RESULT_FILE="/home/runner/work/_temp/plugin-check-results.txt"
+      
+          if [ ! -f "$RESULT_FILE" ]; then
+            echo "❌ Plugin check result file not found!"
+            exit 1
+          fi
+      
+          # Read JSON data from .txt file
+          JSON_CONTENT=$(cat "$RESULT_FILE")
+          echo "$JSON_CONTENT" > $RUNNER_TEMP/plugin-check-results.json
+      
+          ERROR_COUNT=$(jq '[.[] | select(.type=="ERROR")] | length' $RUNNER_TEMP/plugin-check-results.json)
+          WARNING_COUNT=$(jq '[.[] | select(.type=="WARNING")] | length' $RUNNER_TEMP/plugin-check-results.json)
+      
           {
+            echo "<!DOCTYPE html>"
+            echo "<html><body style='font-family:Arial,sans-serif;font-size:14px;'>"
             echo "👋 <strong>Hello CoolPlugins Team,</strong><br><br>"
             echo "The <strong>Plugin Check</strong> for plugin <strong>${{ inputs.plugin-folder }}</strong> has <strong>failed</strong> because of detected issues.<br><br>"
             echo "<h2>📋 Summary</h2>"
@@ -46,14 +62,31 @@ jobs:
             echo "<li><strong>Repository:</strong> <code>${{ github.repository }}</code></li>"
             echo "<li><strong>Workflow Run:</strong> <a href='${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'>View Logs</a></li>"
             echo "<li><strong>Checked Folder:</strong> <code>${{ inputs.plugin-folder }}</code></li>"
+            echo "<li><strong>Detected:</strong> 🚨 ${ERROR_COUNT} Errors | ⚠️ ${WARNING_COUNT} Warnings</li>"
             echo "</ul><br>"
             echo "<h2>⚠️ Detected Issues / Errors</h2>"
-            echo "<table border='1' cellspacing='0' cellpadding='8' style='border-collapse:collapse;font-family:Arial,sans-serif;font-size:14px;'>"
-            echo "<thead><tr style='background:#f6f8fa'><th>Type</th><th>Code</th><th>Message</th><th>Docs</th></tr></thead><tbody>"
-            jq -r '.[] | "<tr><td>" + .type + "</td><td>" + .code + "</td><td>" + (.message | gsub("\\|";"\\|")) + "</td><td><a href=\"" + .docs + "\">Docs</a></td></tr>"' $RUNNER_TEMP/plugin-check-results.json
+            echo "<table border='1' cellspacing='0' cellpadding='8' style='border-collapse:collapse;font-family:Arial,sans-serif;font-size:13px;width:100%;'>"
+            echo "<thead style='background:#f6f8fa;'><tr><th>Type</th><th>Code</th><th>Message</th><th>Docs</th></tr></thead><tbody>"
+            jq -r '
+              .[] |
+              "<tr>" +
+                "<td style=\"color:" + (if .type=="ERROR" then "red" else "#e6b800" end) + ";font-weight:bold;\">" + .type + "</td>" +
+                "<td><code>" + .code + "</code></td>" +
+                "<td>" + (.message | gsub("\\|";"\\|")) + "</td>" +
+                "<td>" + (if (.docs|length)>0 then "<a href=\"" + .docs + "\">Docs</a>" else "—" end) + "</td>" +
+              "</tr>"
+            ' $RUNNER_TEMP/plugin-check-results.json
             echo "</tbody></table><br>"
             echo "Best regards,<br><strong>🧠 CoolPlugins CI Bot</strong>"
+            echo "</body></html>"
           } > email-body.html
+      
+          # Store HTML content as step output (for use in next step)
+          {
+            echo 'html_body<<EOF'
+            cat email-body.html
+            echo 'EOF'
+          } >> $GITHUB_OUTPUT
 
       - name: Send Plugin Check Log via Email
         if: failure()
@@ -67,5 +100,4 @@ jobs:
           to: vishabjeetcoolplugins@gmail.com
           from: CoolPlugins CI Bot <${{ secrets.MAIL_USERNAME }}>
           subject: "❌ Plugin Check Failed for ${{ inputs.plugin-folder }} Because PCP errors found."
-          html_body: |
-            ${{ steps.email_body.outputs.html_body }}
+          html_body: ${{ steps.email_body.outputs.html_body }}
