@@ -53,8 +53,6 @@ jobs:
           WARNING_COUNT=$(jq '[.[] | select(.type=="WARNING")] | length' $RUNNER_TEMP/plugin-check-results.json)
       
           {
-            echo "<!DOCTYPE html>"
-            echo "<html><body style='font-family:Arial,sans-serif;font-size:14px;'>"
             echo "👋 <strong>Hello CoolPlugins Team,</strong><br><br>"
             echo "The <strong>Plugin Check</strong> for plugin <strong>${{ inputs.plugin-folder }}</strong> has <strong>failed</strong> because of detected issues.<br><br>"
             echo "<h2>📋 Summary</h2>"
@@ -78,15 +76,11 @@ jobs:
             ' $RUNNER_TEMP/plugin-check-results.json
             echo "</tbody></table><br>"
             echo "Best regards,<br><strong>🧠 CoolPlugins CI Bot</strong>"
-            echo "</body></html>"
-          } > email-body.html
-      
-          # Store HTML content as step output (for use in next step)
-          {
-            echo 'html_body<<EOF'
-            cat email-body.html
-            echo 'EOF'
-          } >> $GITHUB_OUTPUT
+          } >
+
+          echo "html_body<<EOF"
+          cat email-body.html
+          echo "EOF"
 
       - name: Send Plugin Check Log via Email
         if: failure()
@@ -97,7 +91,7 @@ jobs:
           secure: true
           username: ${{ secrets.MAIL_USERNAME }}
           password: "jebk dviy mqds jocv"
-          to: vishabjeetcoolplugins@gmail.com
+          to: rocef76932@wivstore.com
           from: CoolPlugins CI Bot <${{ secrets.MAIL_USERNAME }}>
           subject: "❌ Plugin Check Failed for ${{ inputs.plugin-folder }} Because PCP errors found."
           html_body: ${{ steps.email_body.outputs.html_body }}
