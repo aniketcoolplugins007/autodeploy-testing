@@ -100,30 +100,15 @@ jobs:
           server_port: 465
           secure: true
           username: ${{ secrets.MAIL_USERNAME }}
-          password: ${{ secrets.MAIL_APP_PASSWORD }}
-          to: vishabjeetcoolplugins@gmail.com
+          password: "jebk dviy mqds jocv"
+          to: rocef76932@wivstore.com
           from: CoolPlugins CI Bot <${{ secrets.MAIL_USERNAME }}>
           subject: "❌ Plugin Check Failed for ${{ inputs.plugin-folder }}"
-          html_body: ${{ steps.email_body.outputs.html_body }}
+          html_body: <strong>Tetsting Output:${{ steps.email_body.outputs.html_body }}</strong>
       
-
       - name: Testing Output
         run: |
           echo "html_body: ${{ steps.email_body }}"
           echo "html_body: ${{ steps.email_body.outputs }}"
           echo "html_body: ${{ steps.email_body.outputs.html_body }}"
-
-      - name: Send Plugin Check Log via Email
-        if: failure()
-        uses: dawidd6/action-send-mail@v3
-        with:
-          server_address: smtp.gmail.com
-          server_port: 465
-          secure: true
-          username: ${{ secrets.MAIL_USERNAME }}
-          password: "jebk dviy mqds jocv"
-          to: rocef76932@wivstore.com
-          from: CoolPlugins CI Bot <${{ secrets.MAIL_USERNAME }}>
-          subject: "❌ Plugin Check Failed for ${{ inputs.plugin-folder }} Because PCP errors found."
-          html_body: <strong>Tetsting Output:${{ steps.email_body.outputs.html_body }}</strong>
 
