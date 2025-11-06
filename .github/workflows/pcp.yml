@@ -35,12 +35,39 @@ jobs:
         if: success()
         run: echo "✅ Plugin Check passed."
 
-      - name: send fails error message to the user
+      - name: Send Plugin Check Log via Email
         if: failure()
-        run: |
-          echo "=== 🧩 WordPress Plugin Check Results ==="
-          if [ -f /home/runner/work/_temp/plugin-check-results.txt ]; then
-            cat /home/runner/work/_temp/plugin-check-results.txt
-          else
-            echo "No results file found!"
-          fi
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          secure: true
+          username: ${{ secrets.MAIL_USERNAME }}
+          password: "jebk dviy mqds jocv"
+          to: vishabjeetcoolplugins@gmail.com
+          from: CoolPlugins CI Bot <${{ secrets.MAIL_USERNAME }}>
+          subject: "❌ Plugin Check Failed for ${{ inputs.plugin-folder }} Because PCP errors found."
+          html_body: |
+            👋 <strong>Hello CoolPlugins Team,</strong>
+            <br>
+            <br>
+            The <strong>PCP</strong> for plugin <strong>`${{ inputs.plugin-folder }}`</strong> has <strong>failed</strong> Because of errors found. Please fix the errors and try again.
+            <br>
+            <h2>📋 Summary</h2>
+            - <strong>Repository:</strong> `${{ github.repository }}`
+            <br>
+            - <strong>Workflow Run:</strong> [View Logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+            <br>
+            - <strong>Checked Folder:</strong> `${{ inputs.plugin-folder }}`
+            <br>
+            <br>
+            <h2>⚠️ Detected Issues / Errors</h2>
+            <br>
+            <code>
+              <pre style="background:#f6f8fa;padding:12px;border-radius:8px;font-family:'Courier New',monospace;font-size:15px;white-space:pre-wrap;line-height:1.5;">
+                ${{ steps.read_log.outputs.log_content }}
+              </pre>
+            </code>
+            <br>
+            Best regards, <br>
+            — <strong>🧠 CoolPlugins CI Bot</strong>
