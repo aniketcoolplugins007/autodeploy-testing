@@ -45,16 +45,20 @@ jobs:
             exit 1
           fi
       
-          # Read JSON data from .txt file
+          # Read JSON content from .txt file
           JSON_CONTENT=$(cat "$RESULT_FILE")
           echo "$JSON_CONTENT" > $RUNNER_TEMP/plugin-check-results.json
       
+          # Count totals
           ERROR_COUNT=$(jq '[.[] | select(.type=="ERROR")] | length' $RUNNER_TEMP/plugin-check-results.json)
           WARNING_COUNT=$(jq '[.[] | select(.type=="WARNING")] | length' $RUNNER_TEMP/plugin-check-results.json)
       
           {
+            echo "<!DOCTYPE html>"
+            echo "<html><body style='font-family:Arial,sans-serif;font-size:14px;'>"
             echo "👋 <strong>Hello CoolPlugins Team,</strong><br><br>"
             echo "The <strong>Plugin Check</strong> for plugin <strong>${{ inputs.plugin-folder }}</strong> has <strong>failed</strong> because of detected issues.<br><br>"
+      
             echo "<h2>📋 Summary</h2>"
             echo "<ul>"
             echo "<li><strong>Repository:</strong> <code>${{ github.repository }}</code></li>"
@@ -62,9 +66,11 @@ jobs:
             echo "<li><strong>Checked Folder:</strong> <code>${{ inputs.plugin-folder }}</code></li>"
             echo "<li><strong>Detected:</strong> 🚨 ${ERROR_COUNT} Errors | ⚠️ ${WARNING_COUNT} Warnings</li>"
             echo "</ul><br>"
+      
             echo "<h2>⚠️ Detected Issues / Errors</h2>"
             echo "<table border='1' cellspacing='0' cellpadding='8' style='border-collapse:collapse;font-family:Arial,sans-serif;font-size:13px;width:100%;'>"
             echo "<thead style='background:#f6f8fa;'><tr><th>Type</th><th>Code</th><th>Message</th><th>Docs</th></tr></thead><tbody>"
+      
             jq -r '
               .[] |
               "<tr>" +
@@ -74,13 +80,32 @@ jobs:
                 "<td>" + (if (.docs|length)>0 then "<a href=\"" + .docs + "\">Docs</a>" else "—" end) + "</td>" +
               "</tr>"
             ' $RUNNER_TEMP/plugin-check-results.json
+      
             echo "</tbody></table><br>"
             echo "Best regards,<br><strong>🧠 CoolPlugins CI Bot</strong>"
-          } >
-
-          echo "html_body<<EOF"
-          cat email-body.html
-          echo "EOF"
+            echo "</body></html>"
+          } > email-body.html
+      
+          # Export HTML content safely for next step (no indentation errors)
+          echo "html_body<<EOF" >> $GITHUB_OUTPUT
+          cat email-body.html >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+      
+      
+      - name: Send Plugin Check Log via Email
+        if: failure()  # only send when the job fails
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          secure: true
+          username: ${{ secrets.MAIL_USERNAME }}
+          password: ${{ secrets.MAIL_APP_PASSWORD }}
+          to: vishabjeetcoolplugins@gmail.com
+          from: CoolPlugins CI Bot <${{ secrets.MAIL_USERNAME }}>
+          subject: "❌ Plugin Check Failed for ${{ inputs.plugin-folder }}"
+          html_body: ${{ steps.email_body.outputs.html_body }}
+      
 
       - name: Testing Output
         run: |
@@ -100,4 +125,5 @@ jobs:
           to: rocef76932@wivstore.com
           from: CoolPlugins CI Bot <${{ secrets.MAIL_USERNAME }}>
           subject: "❌ Plugin Check Failed for ${{ inputs.plugin-folder }} Because PCP errors found."
-          html_body: ${{ steps.email_body }}
+          html_body: <strong>Tetsting Output:${{ steps.email_body.outputs.html_body }}</strong>
+
