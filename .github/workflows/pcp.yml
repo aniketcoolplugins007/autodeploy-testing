@@ -104,7 +104,22 @@ jobs:
           to: rocef76932@wivstore.com
           from: CoolPlugins CI Bot <${{ secrets.MAIL_USERNAME }}>
           subject: "❌ Plugin Check Failed for ${{ inputs.plugin-folder }}"
-          html_body: <strong>Tetsting Output:${{ steps.email_body.outputs.html_body }}</strong>
+          html_body: |
+              👋 <strong>Hello CoolPlugins Team,</strong><br><br>
+              The <strong>Plugin Check</strong> for plugin <strong>${{ inputs.plugin-folder }}</strong> has <strong>failed</strong> because of detected issues.<br><br>
+        
+              <h2>📋 Summary</h2>
+              <ul>
+              <li><strong>Repository:</strong> <code>${{ github.repository }}</code></li>
+              <li><strong>Workflow Run:</strong> <a href='${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'>View Logs</a></li>
+              <li><strong>Checked Folder:</strong> <code>${{ inputs.plugin-folder }}</code></li>
+              <li><strong>Detected:</strong> 🚨 ${ERROR_COUNT} Errors | ⚠️ ${WARNING_COUNT} Warnings</li>
+              </ul><br>
+        
+              <h2>⚠️ Detected Issues / Errors</h2>"
+              <table border='1' cellspacing='0' cellpadding='8' style='border-collapse:collapse;font-family:Arial,sans-serif;font-size:13px;width:100%;'>"
+              <thead style='background:#f6f8fa;'><tr><th>Type</th><th>Code</th><th>Message</th><th>Docs</th></tr></thead></table><br>
+              Best regards,<br><strong>🧠 CoolPlugins CI Bot</strong>
       
       - name: Testing Output
         run: |
