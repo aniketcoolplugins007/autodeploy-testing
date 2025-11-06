@@ -54,8 +54,6 @@ jobs:
           WARNING_COUNT=$(jq '[.[] | select(.type=="WARNING")] | length' $RUNNER_TEMP/plugin-check-results.json)
       
           {
-            echo "<!DOCTYPE html>"
-            echo "<html><body style='font-family:Arial,sans-serif;font-size:14px;'>"
             echo "👋 <strong>Hello CoolPlugins Team,</strong><br><br>"
             echo "The <strong>Plugin Check</strong> for plugin <strong>${{ inputs.plugin-folder }}</strong> has <strong>failed</strong> because of detected issues.<br><br>"
       
@@ -83,15 +81,11 @@ jobs:
       
             echo "</tbody></table><br>"
             echo "Best regards,<br><strong>🧠 CoolPlugins CI Bot</strong>"
-            echo "</body></html>"
-          } > email-body.html
-      
-          # Export HTML content safely for next step (no indentation errors)
-          echo "html_body<<EOF" >> $GITHUB_OUTPUT
-          cat email-body.html >> $GITHUB_OUTPUT
+          } > $RUNNER_TEMP/email-body.txt
+
+          cat $RUNNER_TEMP/email-body.txt >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
-      
-      
+
       - name: Send Plugin Check Log via Email
         if: failure()  # only send when the job fails
         uses: dawidd6/action-send-mail@v3
@@ -116,9 +110,8 @@ jobs:
               <li><strong>Detected:</strong> 🚨 ${ERROR_COUNT} Errors | ⚠️ ${WARNING_COUNT} Warnings</li>
               </ul><br>
         
-              <h2>⚠️ Detected Issues / Errors</h2>"
-              <table border='1' cellspacing='0' cellpadding='8' style='border-collapse:collapse;font-family:Arial,sans-serif;font-size:13px;width:100%;'>"
-              <thead style='background:#f6f8fa;'><tr><th>Type</th><th>Code</th><th>Message</th><th>Docs</th></tr></thead></table><br>
+              <h2>⚠️ Detected Issues / Errors</h2>
+              ${{ steps.email_body.outputs.log_content }}<br>
               Best regards,<br><strong>🧠 CoolPlugins CI Bot</strong>
       
       - name: Testing Output
