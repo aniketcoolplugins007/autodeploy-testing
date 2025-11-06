@@ -35,8 +35,27 @@ jobs:
         if: success()
         run: echo "✅ Plugin Check passed."
 
+      - name: Generate HTML Email Body
+        id: email_body
+        run: |
+          {
+            echo "👋 <strong>Hello CoolPlugins Team,</strong><br><br>"
+            echo "The <strong>Plugin Check</strong> for plugin <strong>${{ inputs.plugin-folder }}</strong> has <strong>failed</strong> because of detected issues.<br><br>"
+            echo "<h2>📋 Summary</h2>"
+            echo "<ul>"
+            echo "<li><strong>Repository:</strong> <code>${{ github.repository }}</code></li>"
+            echo "<li><strong>Workflow Run:</strong> <a href='${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'>View Logs</a></li>"
+            echo "<li><strong>Checked Folder:</strong> <code>${{ inputs.plugin-folder }}</code></li>"
+            echo "</ul><br>"
+            echo "<h2>⚠️ Detected Issues / Errors</h2>"
+            echo "<table border='1' cellspacing='0' cellpadding='8' style='border-collapse:collapse;font-family:Arial,sans-serif;font-size:14px;'>"
+            echo "<thead><tr style='background:#f6f8fa'><th>Type</th><th>Code</th><th>Message</th><th>Docs</th></tr></thead><tbody>"
+            jq -r '.[] | "<tr><td>" + .type + "</td><td>" + .code + "</td><td>" + (.message | gsub("\\|";"\\|")) + "</td><td><a href=\"" + .docs + "\">Docs</a></td></tr>"' $RUNNER_TEMP/plugin-check-results.json
+            echo "</tbody></table><br>"
+            echo "Best regards,<br><strong>🧠 CoolPlugins CI Bot</strong>"
+          } > email-body.html
+
       - name: Send Plugin Check Log via Email
-        if: failure()
         uses: dawidd6/action-send-mail@v3
         with:
           server_address: smtp.gmail.com
@@ -48,26 +67,4 @@ jobs:
           from: CoolPlugins CI Bot <${{ secrets.MAIL_USERNAME }}>
           subject: "❌ Plugin Check Failed for ${{ inputs.plugin-folder }} Because PCP errors found."
           html_body: |
-            👋 <strong>Hello CoolPlugins Team,</strong>
-            <br>
-            <br>
-            The <strong>PCP</strong> for plugin <strong>`${{ inputs.plugin-folder }}`</strong> has <strong>failed</strong> Because of errors found. Please fix the errors and try again.
-            <br>
-            <h2>📋 Summary</h2>
-            - <strong>Repository:</strong> `${{ github.repository }}`
-            <br>
-            - <strong>Workflow Run:</strong> [View Logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
-            <br>
-            - <strong>Checked Folder:</strong> `${{ inputs.plugin-folder }}`
-            <br>
-            <br>
-            <h2>⚠️ Detected Issues / Errors</h2>
-            <br>
-            <code>
-              <pre style="background:#f6f8fa;padding:12px;border-radius:8px;font-family:'Courier New',monospace;font-size:15px;white-space:pre-wrap;line-height:1.5;">
-                ${{ steps.read_log.outputs.log_content }}
-              </pre>
-            </code>
-            <br>
-            Best regards, <br>
-            — <strong>🧠 CoolPlugins CI Bot</strong>
+            ${{ steps.email_body.outputs.html_body }}
