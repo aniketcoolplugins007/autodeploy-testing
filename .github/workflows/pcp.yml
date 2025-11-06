@@ -35,28 +35,37 @@ jobs:
         if: success()
         run: echo "✅ Plugin Check passed."
 
-      - name: Generate HTML Email Body
-        id: email_body
+      - name: ⚙️ Generate HTML Report File
+        id: generate_html_file
+        # Run only if the plugin check failed and produced the results file
+        if: steps.check.outcome == 'failure'
         run: |
           RESULT_FILE="/home/runner/work/_temp/plugin-check-results.txt"
-      
+          TEMP_JSON_FILE="$RUNNER_TEMP/plugin-check-results.json"
+          HTML_OUTPUT_FILE="$RUNNER_TEMP/plugin-check-html.txt" # Target output file
+
+          # --- 1. Check for the results file ---
           if [ ! -f "$RESULT_FILE" ]; then
-            echo "❌ Plugin check result file not found!"
-            exit 1
+            echo "❌ Plugin check result file not found! Skipping HTML generation."
+            exit 0
           fi
-      
-          # Read JSON content from .txt file
-          JSON_CONTENT=$(cat "$RESULT_FILE")
-          echo "$JSON_CONTENT" > $RUNNER_TEMP/plugin-check-results.json
-      
-          # Count totals
-          ERROR_COUNT=$(jq '[.[] | select(.type=="ERROR")] | length' $RUNNER_TEMP/plugin-check-results.json)
-          WARNING_COUNT=$(jq '[.[] | select(.type=="WARNING")] | length' $RUNNER_TEMP/plugin-check-results.json)
-      
+          
+          # --- 2. Convert TXT content to JSON file ---
+          # The TXT file contains raw JSON output from the action. We save it to a .json file.
+          cat "$RESULT_FILE" > "$TEMP_JSON_FILE"
+          
+          # --- 3. Count Totals (for Summary) ---
+          ERROR_COUNT=$(jq '[.[] | select(.type=="ERROR")] | length' "$TEMP_JSON_FILE")
+          WARNING_COUNT=$(jq '[.[] | select(.type=="WARNING")] | length' "$TEMP_JSON_FILE")
+
+          # --- 4. Generate Full HTML Structure and Save to $HTML_OUTPUT_FILE ---
           {
+            # HTML Header and Summary
+            echo "<!DOCTYPE html>"
+            echo "<html><body style='font-family:Arial,sans-serif;font-size:14px;'>"
             echo "👋 <strong>Hello CoolPlugins Team,</strong><br><br>"
             echo "The <strong>Plugin Check</strong> for plugin <strong>${{ inputs.plugin-folder }}</strong> has <strong>failed</strong> because of detected issues.<br><br>"
-      
+            
             echo "<h2>📋 Summary</h2>"
             echo "<ul>"
             echo "<li><strong>Repository:</strong> <code>${{ github.repository }}</code></li>"
@@ -64,11 +73,14 @@ jobs:
             echo "<li><strong>Checked Folder:</strong> <code>${{ inputs.plugin-folder }}</code></li>"
             echo "<li><strong>Detected:</strong> 🚨 ${ERROR_COUNT} Errors | ⚠️ ${WARNING_COUNT} Warnings</li>"
             echo "</ul><br>"
-      
+            
+            # HTML Table Header
             echo "<h2>⚠️ Detected Issues / Errors</h2>"
             echo "<table border='1' cellspacing='0' cellpadding='8' style='border-collapse:collapse;font-family:Arial,sans-serif;font-size:13px;width:100%;'>"
             echo "<thead style='background:#f6f8fa;'><tr><th>Type</th><th>Code</th><th>Message</th><th>Docs</th></tr></thead><tbody>"
-      
+            
+            # --- 5. Generate Table Rows using jq (The "Loop") ---
+            # jq processes the JSON array and converts each object into a table row <tr>
             jq -r '
               .[] |
               "<tr>" +
@@ -77,43 +89,18 @@ jobs:
                 "<td>" + (.message | gsub("\\|";"\\|")) + "</td>" +
                 "<td>" + (if (.docs|length)>0 then "<a href=\"" + .docs + "\">Docs</a>" else "—" end) + "</td>" +
               "</tr>"
-            ' $RUNNER_TEMP/plugin-check-results.json
-      
+            ' "$TEMP_JSON_FILE"
+            
+            # HTML Footer
             echo "</tbody></table><br>"
             echo "Best regards,<br><strong>🧠 CoolPlugins CI Bot</strong>"
-          } > $RUNNER_TEMP/email-body.txt
+            echo "</body></html>"
+          } > "$HTML_OUTPUT_FILE" # Save all output to the new file
 
-          cat $RUNNER_TEMP/email-body.txt >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+          # --- 6. Set Output Variable to make the FILE PATH accessible ---
+          # We export the PATH to the generated HTML file, not the content itself.
+          echo "html_file_path=$HTML_OUTPUT_FILE" >> $GITHUB_OUTPUT
 
-      - name: Send Plugin Check Log via Email
-        if: failure()  # only send when the job fails
-        uses: dawidd6/action-send-mail@v3
-        with:
-          server_address: smtp.gmail.com
-          server_port: 465
-          secure: true
-          username: ${{ secrets.MAIL_USERNAME }}
-          password: "jebk dviy mqds jocv"
-          to: rocef76932@wivstore.com
-          from: CoolPlugins CI Bot <${{ secrets.MAIL_USERNAME }}>
-          subject: "❌ Plugin Check Failed for ${{ inputs.plugin-folder }}"
-          html_body: |
-              👋 <strong>Hello CoolPlugins Team,</strong><br><br>
-              The <strong>Plugin Check</strong> for plugin <strong>${{ inputs.plugin-folder }}</strong> has <strong>failed</strong> because of detected issues.<br><br>
-        
-              <h2>📋 Summary</h2>
-              <ul>
-              <li><strong>Repository:</strong> <code>${{ github.repository }}</code></li>
-              <li><strong>Workflow Run:</strong> <a href='${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'>View Logs</a></li>
-              <li><strong>Checked Folder:</strong> <code>${{ inputs.plugin-folder }}</code></li>
-              <li><strong>Detected:</strong> 🚨 ${ERROR_COUNT} Errors | ⚠️ ${WARNING_COUNT} Warnings</li>
-              </ul><br>
-        
-              <h2>⚠️ Detected Issues / Errors</h2>
-              ${{ steps.email_body.outputs.log_content }}<br>
-              Best regards,<br><strong>🧠 CoolPlugins CI Bot</strong>
-      
       - name: Testing Output
         run: |
           echo "html_body: ${{ steps.email_body }}"
