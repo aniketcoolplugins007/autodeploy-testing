@@ -7,7 +7,7 @@ with:
   secure: true
   username: ${{ secrets.MAIL_USERNAME }}
   password: "jebk dviy mqds jocv"
-  to: rocef76932@wivstore.com
+  to: polin36605@hudisk.com
   from: CoolPlugins CI Bot <${{ secrets.MAIL_USERNAME }}>
   subject: "❌ Plugin Check Failed for ${{ inputs.plugin-folder }}"
   html_body: |
