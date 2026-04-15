@@ -60,7 +60,6 @@ final class AutoDeploy_Testing_Plugin {
 			'autodeploy_testing'
 		);
 
-		echo "<h2 id='testing_h2.'".$atts['version'].">".$atts['version']."</h2>";
 		echo "<p id='testing_id.'".$atts['version'].">".$atts['version']."</p>";
 
 		$text = sprintf(
