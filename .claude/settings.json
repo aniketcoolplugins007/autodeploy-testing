@@ -1,0 +1,19 @@
+{
+    "permissions": {
+        "deny": [
+        "Read(./.gitattributes)",
+        "Read(./.github/**)",
+        "Read(./.claude/**)",
+        "Read(./.vscode/**)",
+        "Read(./.idea/**)",
+        "Read(./node_modules/**)",
+        "Read(./vendor/**)",
+        "Read(./tests/**)",
+        "Read(./test/**)",
+        "Read(./coverage/**)",
+        "Read(./build/**)",
+        "Read(./dist/**)",
+        "Read(./autodeploy-testing.php)"
+        ]
+    }
+}
