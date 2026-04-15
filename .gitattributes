@@ -1,0 +1,37 @@
+* text=auto eol=lf
+
+*.php text eol=lf
+*.md text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.json text eol=lf
+
+# Exclude non-distribution files from git archive (plugin zips)
+.gitignore export-ignore
+.gitattributes export-ignore
+.github/ export-ignore
+.claude/ export-ignore
+.vscode/ export-ignore
+.idea/ export-ignore
+
+node_modules/ export-ignore
+vendor/ export-ignore
+
+tests/ export-ignore
+test/ export-ignore
+coverage/ export-ignore
+
+phpunit.xml export-ignore
+phpunit.xml.dist export-ignore
+phpcs.xml export-ignore
+phpcs.xml.dist export-ignore
+psalm.xml export-ignore
+psalm.xml.dist export-ignore
+
+.env export-ignore
+.env.* export-ignore
+
+README.md export-ignore
+readme.md export-ignore
+CHANGELOG.md export-ignore
+changelog.md export-ignore
