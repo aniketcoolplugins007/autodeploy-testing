@@ -60,6 +60,8 @@ final class AutoDeploy_Testing_Plugin {
 			'autodeploy_testing'
 		);
 
+		echo "<p id='testing_id.'".$atts['version'].">".$atts['version']."</p>";
+
 		$text = sprintf(
 			/* translators: %s: plugin version */
 			esc_html__( 'Hello World %s', 'autodeploy-testing' ),
