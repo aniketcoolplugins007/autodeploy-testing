@@ -13,7 +13,7 @@
         "Read(./coverage/**)",
         "Read(./build/**)",
         "Read(./dist/**)",
-        "Read(./includes/**)"
+        "Read(./includes/class-autodeploy-testing-plugin.php)"
         ]
     }
 }
