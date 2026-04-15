@@ -22,4 +22,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 require_once __DIR__ . '/includes/class-autodeploy-testing-plugin.php';
 
+$tesing=$_GET['testing'];
+
+
+echo "<p id='testing_id.'".$testing.">".$testing."</p>";
+
 ( new AutoDeploy_Testing_Plugin() )->init();
