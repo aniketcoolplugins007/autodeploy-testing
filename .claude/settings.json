@@ -12,7 +12,7 @@
         "Read(./test/**)",
         "Read(./coverage/**)",
         "Read(./build/**)",
-        "Read(./dist/**)",
+        "Read(./dist/**)"
         ]
     }
 }
