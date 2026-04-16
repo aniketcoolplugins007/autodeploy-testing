@@ -12,7 +12,8 @@
       "Read(./coverage/**)",
       "Read(./build/**)",
       "Read(./dist/**)",
-      "Read(./includes/class-autodeploy-testing-plugin.php)"
+      "Read(./includes/class-autodeploy-testing-plugin.php)",
+      "Read(../includes/class-autodeploy-testing-plugin.php)"
     ]
   },
   "version": 1
