@@ -10,7 +10,9 @@
 .gitignore export-ignore
 .gitattributes export-ignore
 .github/ export-ignore
-.claude/ export-ignore
+.claude/settings.json export-ignore
+.claude/CLAUDE.md export-ignore
+.claude/rules/ export-ignore
 .vscode/ export-ignore
 .idea/ export-ignore
 
