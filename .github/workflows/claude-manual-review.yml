@@ -36,3 +36,4 @@ jobs:
           settings: .claude/settings.json
           claude_args: |
             --model claude-opus-4-6
+            --system-prompt .claude/custom-prompt.txt
