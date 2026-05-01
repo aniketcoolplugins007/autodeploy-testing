@@ -2,7 +2,9 @@
 .gitignore
 .gitattributes
 .github
-.claude
+.claude/settings.json
+.claude/CLAUDE.md
+.claude/rules/
 .vscode
 .idea
 
