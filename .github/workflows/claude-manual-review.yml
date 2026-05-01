@@ -29,6 +29,13 @@ jobs:
         with:
           fetch-depth: 1
 
+      - name: Load custom prompt
+        id: custom_prompt
+        run: |
+          echo "PROMPT<<EOF" >> $GITHUB_ENV
+          cat .claude/custom-prompt.txt >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
       - name: PR Review with Progress Tracking
         uses: anthropics/claude-code-action@v1
         with:
@@ -36,3 +43,4 @@ jobs:
           settings: .claude/settings.json
           claude_args: |
             --model claude-opus-4-6
+            --append-system-prompt ${{ env.PROMPT }}
