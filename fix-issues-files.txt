@@ -1,0 +1,6 @@
+Total Files Scanned: 5
+readme.txt
+index.php
+index.html
+autodeploy-testing.php
+includes/class-autodeploy-testing-plugin.php
