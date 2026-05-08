@@ -33,7 +33,7 @@ jobs:
 
       - name: Check Claude Selected Model
         run: |
-          echo "Claude Selected Model: ${{ secrets.CUSTOM_CLAUDE_MODEL }}"
+          echo "Claude Selected Model For Testing: ${{ secrets.CUSTOM_CLAUDE_MODEL }}"
 
       - name: PR Review with Progress Tracking
         uses: anthropics/claude-code-action@v1
