@@ -31,11 +31,15 @@ jobs:
         with:
           fetch-depth: 1
 
+      - name: Check Claude Selected Model
+        run: |
+          echo "Claude Selected Model: ${{ secrets.CUSTOM_CLAUDE_MODEL }}"
+
       - name: PR Review with Progress Tracking
         uses: anthropics/claude-code-action@v1
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           settings: .claude/settings.json
           claude_args: |
-            --model claude-opus-4-6
+            --model ${{ secrets.CUSTOM_CLAUDE_MODEL }}
             --append-system-prompt-file .claude/custom-prompt.txt
